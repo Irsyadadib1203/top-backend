@@ -2,22 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pengguna;
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\AdminRole;
+use App\Models\AdminProfile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class PenggunaController extends Controller
 {
     // ✅ Menampilkan semua pengguna
     public function index()
     {
-        $pengguna = Pengguna::all();
-        return view('superadmin.pengguna.pengguna', compact('pengguna'));
-    }
+        $pengguna = User::with(['adminRole', 'adminProfile'])->get()
+            ->map(function ($user) {
+                return (object) [
+                    'id_pengguna' => $user->id,
+                    'nm_pengguna' => $user->adminProfile->full_name ?? $user->name,
+                    'username'    => $user->email,
+                    'role'        => $user->adminRole->role ?? '-',
+                    'status'      => $user->is_active ? 'aktif' : 'nonaktif',
+                ];
+            });
 
-    // ✅ Menampilkan form tambah pengguna
-    public function create()
-    {
-        return view('superadminpengguna.tambah');
+        return view('superadmin.pengguna.pengguna', compact('pengguna'));
     }
 
     // ✅ Simpan data pengguna baru
@@ -25,61 +34,77 @@ class PenggunaController extends Controller
     {
         $request->validate([
             'nm_pengguna' => 'required|string|max:100',
-            'username' => 'required|string|max:50|unique:pengguna,username',
-            'password' => 'required|string|min:6',
-            'role' => 'required|in:superadmin,admin',
-            'status' => 'required|in:aktif,nonaktif',
+            'username'    => 'required|email|unique:users,email',
+            'password'    => 'required|min:6',
+            'role'        => 'required|in:admin,operator,superadmin',
+            'status'      => 'required|in:aktif,nonaktif',
         ]);
 
-        Pengguna::create([
-            'nm_pengguna' => $request->nm_pengguna,
-            'username' => $request->username,
-            'password' => $request->password,
-            'role' => $request->role,
-            'status' => $request->status,
-        ]);
+        DB::transaction(function () use ($request) {
+            $user = User::create([
+                'name'      => $request->nm_pengguna,
+                'email'     => $request->username,
+                'password'  => Hash::make($request->password),
+                'is_active' => $request->status === 'aktif',
+            ]);
 
-        return redirect()->route('pengguna')->with('success', 'Pengguna berhasil ditambahkan.');
-    }
+            AdminProfile::create([
+                'user_id'   => $user->id,
+                'full_name' => $request->nm_pengguna,
+            ]);
 
-    // ✅ Menampilkan form edit pengguna
-    public function edit($id_pengguna)
-    {
-        $pengguna = Pengguna::findOrFail($id_pengguna);
-        return view('superadmin.pengguna.edit', compact('pengguna'));
+            AdminRole::create([
+                'user_id' => $user->id,
+                'role'    => $request->role,
+            ]);
+        });
+
+        return redirect()->back()->with('success', 'Pengguna berhasil ditambahkan.');
     }
 
     // ✅ Update data pengguna
-    public function update(Request $request, $id_pengguna)
+    public function update(Request $request, $id)
     {
-        $pengguna = Pengguna::findOrFail($id_pengguna);
-
         $request->validate([
             'nm_pengguna' => 'required|string|max:100',
-            'username' => 'required|string|max:50|unique:pengguna,username,' . $pengguna->id_pengguna . ',id_pengguna',
-            'password' => 'nullable|string|min:6',
-            'role' => 'required|in:superadmin,admin',
-            'status' => 'required|in:aktif,nonaktif',
+            'username'    => 'required|email|unique:users,email,' . $id,
+            'role'        => 'required|in:admin,operator,viewer',
+            'status'      => 'required|in:aktif,nonaktif',
         ]);
 
-        $data = $request->only(['nm_pengguna', 'username', 'role', 'status']);
+        DB::transaction(function () use ($request, $id) {
+            $user = User::findOrFail($id);
 
-        // Update password jika diisi
-        if ($request->filled('password')) {
-            $data['password'] = bcrypt($request->password);
-        }
+            $user->update([
+                'name'      => $request->nm_pengguna,
+                'email'     => $request->username,
+                'is_active' => $request->status === 'aktif',
+            ]);
 
-        $pengguna->update($data);
+            $user->adminProfile()->updateOrCreate(
+                ['user_id' => $user->id],
+                ['full_name' => $request->nm_pengguna]
+            );
 
-        return redirect()->route('pengguna')->with('success', 'Data pengguna berhasil diperbarui.');
+            $user->adminRole()->updateOrCreate(
+                ['user_id' => $user->id],
+                ['role' => $request->role]
+            );
+        });
+
+        return redirect()->back()->with('success', 'Data pengguna berhasil diperbarui.');
     }
 
     // ✅ Hapus pengguna
-    public function destroy($id_pengguna)
+    public function destroy($id)
     {
-        $pengguna = Pengguna::findOrFail($id_pengguna);
-        $pengguna->delete();
+        DB::transaction(function () use ($id) {
+            $user = User::findOrFail($id);
+            $user->adminRole()->delete();
+            $user->adminProfile()->delete();
+            $user->delete();
+        });
 
-        return redirect()->route('pengguna')->with('success', 'Pengguna berhasil dihapus.');
+        return redirect()->back()->with('success', 'Pengguna berhasil dihapus.');
     }
 }

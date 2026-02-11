@@ -4,48 +4,70 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
     public function index()
     {
         if (Auth::check()) {
-            // Jika sudah login, langsung arahkan ke dashboard
             return redirect()->route('admin.dashboard');
         }
 
-        // Jika belum login, tampilkan halaman login
         return view('login');
     }
-
 
     public function authenticate(Request $request)
     {
         $credentials = $request->validate([
-            'username' => 'required',
+            'email'    => 'required|email',
             'password' => 'required',
         ]);
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            // Ambil data user yang login
             $user = Auth::user();
 
-            // Arahkan sesuai role
-            if ($user->role === 'superadmin') {
-                return redirect()->route('admin.dashboard'); // kamu bisa ubah route-nya sesuai yang kamu punya
-            } elseif ($user->role === 'admin') {
-                return redirect()->route('admin.dashboard'); // atau buat route lain, misalnya 'admin.page'
-            } else {
+            // ❌ user nonaktif
+            if (!$user->is_active) {
                 Auth::logout();
-                return redirect('/')->withErrors(['username' => 'Role tidak dikenali.']);
+                return back()->withErrors([
+                    'email' => 'Akun tidak aktif.'
+                ]);
             }
+
+            // ambil role dari relasi
+            $role = $user->adminRole->role ?? null;
+
+            if (!$role) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Role tidak ditemukan.'
+                ]);
+            }
+
+            // arahkan berdasarkan role
+            return match ($role) {
+                'superadmin' => redirect()->route('admin.dashboard'),
+                'admin'      => redirect()->route('admin.dashboard'),
+                'operator'   => redirect()->route('admin.dashboard'),
+                default      => $this->logoutWithError(),
+            };
         }
 
         return back()->withErrors([
-            'username' => 'Username atau password salah.',
-        ])->onlyInput('username');
+            'email' => 'Email atau password salah.',
+        ])->onlyInput('email');
+    }
+
+    private function logoutWithError()
+    {
+        Auth::logout();
+        return redirect('/')->withErrors([
+            'email' => 'Role tidak dikenali.'
+        ]);
     }
 
     public function logout(Request $request)
@@ -56,5 +78,38 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    public function register()
+    {
+        // Cegah register kalau user sudah ada
+        if (User::count() > 0) {
+            abort(403, 'Register sudah ditutup');
+        }
+
+        return view('admin.auth.register');
+    }
+
+    public function store(Request $request)
+    {
+        // Cegah register ulang
+        if (User::count() > 0) {
+            abort(403, 'Register sudah ditutup');
+        }
+
+        $request->validate([
+            'name'     => 'required|string|max:100',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|confirmed|min:6',
+        ]);
+
+        User::create([  
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+            'role'     => 'superadmin', // user pertama
+        ]);
+
+        return redirect()->route('login')->with('success', 'User pertama berhasil dibuat');
     }
 }

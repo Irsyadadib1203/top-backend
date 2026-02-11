@@ -3,21 +3,47 @@
 @section('title', 'Manajemen Pengguna')
 
 @section('content')
-<main class="h-full pb-16 overflow-y-auto">
-  <div class="container grid px-6 mx-auto">
+<main class="h-full pb-16 overflow-y-auto"
+x-data="{
+    showEdit: false,
+    showDelete: false,
+    showAdd: false,
+    pengguna: {},
+    csrf: '{{ csrf_token() }}',
+
+    openEditModal(id, nama, username, role, status) {
+        this.pengguna = {
+            id_pengguna: id,
+            nm_pengguna: nama,
+            username: username,
+            role: role,
+            status: status
+        };
+        this.showEdit = true;
+    },
+
+    openDeleteModal(id, nama) {
+        this.pengguna = {
+            id_pengguna: id,
+            nm_pengguna: nama,
+        };
+        this.showDelete = true;
+    }
+}">
+
     <div class="flex items-center justify-between my-6">
       <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
         Manajemen Pengguna
       </h2>
-      <a
-        href="{{ route('pengguna.tambah') }}"
-        class="flex items-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue transition"
+      <button
+        @click="showAdd = true"
+        class="flex items-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none transition"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
         Tambah Pengguna
-      </a>
+      </button>
     </div>
 
     <div class="w-full mb-8 overflow-hidden rounded-lg shadow-xs">
@@ -110,27 +136,112 @@
             @endforelse
           </tbody>
         </table>
-<!-- MODAL WRAPPER -->
-<div 
-  x-data="{ showEdit: false, showDelete: false, pengguna: {}, csrf: '{{ csrf_token() }}' }"
-  @open-edit-modal.window="showEdit = true; pengguna = $event.detail"
-  @open-delete-modal.window="showDelete = true; pengguna = $event.detail"
-  class="relative z-50"
->
 
   <!-- BACKDROP -->
   <div 
-    x-show="showEdit || showDelete"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    x-show="showEdit || showDelete || showAdd"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-30"
     x-transition.opacity
     x-cloak
   >
+
+  <!-- MODAL TAMBAH PENGGUNA -->
+<div 
+  x-show="showAdd"
+  x-transition:enter="transition ease-out duration-150"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  x-transition:leave="transition ease-in duration-150"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+  class="fixed inset-0 z-30 flex items-end bg-black bg-opacity-50 sm:items-center sm:justify-center"
+>
+  <div x-show="showAdd"
+        x-transition:enter="transition ease-out duration-150"
+        x-transition:enter-start="opacity-0 transform translate-y-1/2"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0 transform translate-y-1/2"
+        @click.away="showAddModal = false"
+        @keydown.escape="showAddModal = false"
+        class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-4xl rounded-xl w-full shadow-xl max-h-[90vh] overflow-y-auto"
+  >
+    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-center mb-2">
+      Tambah Pengguna
+    </h3>
+
+    <form action="{{ route('pengguna.store') }}" method="POST" class="space-y-4">
+      @csrf
+
+      <div class="space-y-1">
+        <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Nama Pengguna</label>
+        <input type="text" name="nm_pengguna"
+               class="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
+               required>
+      </div>
+
+      <div class="space-y-1">
+        <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Username</label>
+        <input type="text" name="username"
+               class="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
+               required>
+      </div>
+
+      <div class="space-y-1">
+        <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Password</label>
+        <input type="password" name="password"
+               class="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
+               required>
+      </div>
+
+      <div class="flex space-x-3">
+        <div class="w-1/2 space-y-1">
+          <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Role</label>
+          <select name="role"
+                  class="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500">
+            <option value="superadmin">Superadmin</option>
+            <option value="admin">Admin</option>
+            <option value="operator">Operator</option>
+          </select>
+        </div>
+
+        <div class="w-1/2 space-y-1">
+          <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Status</label>
+          <select name="status"
+                  class="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500">
+            <option value="aktif">Aktif</option>
+            <option value="nonaktif">Nonaktif</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-3 pt-3">
+        <button type="button" @click="showAdd = false"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+          Batal
+        </button>
+
+        <button type="submit"
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500">
+          Simpan
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
     <!-- Modal Edit Pengguna -->
 <div 
   x-show="showEdit"
-  x-transition.scale.95
-  x-cloak
-  class="fixed inset-0 flex items-center justify-center bg-black/50 z-50"
+  x-transition:enter="transition ease-out duration-150"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    class="fixed inset-0 z-30 flex items-end bg-black bg-opacity-50 sm:items-center sm:justify-center"
+    x-cloak
   @click.away="showEdit = false"
 >
   <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-96 p-6 space-y-4 transform transition-all" style="border-radius: 20px;">
@@ -159,8 +270,9 @@
           <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Role</label>
           <select name="role" x-model="pengguna.role"
                   class="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500">
-            <option value="admin">Admin</option>
             <option value="superadmin">Superadmin</option>
+            <option value="admin">Admin</option>
+            <option value="operator">Operator</option>
           </select>
         </div>
         <div class="w-1/2 space-y-1">
@@ -192,12 +304,17 @@
      <!-- 🗑️ MODAL HAPUS -->
 <div 
   x-show="showDelete"
-  x-transition.scale.95
-  x-cloak
-  class="fixed inset-0 flex items-center justify-center bg-black/50 z-50"
+ x-transition:enter="transition ease-out duration-150"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    class="fixed inset-0 z-30 flex items-end bg-black bg-opacity-50 sm:items-center sm:justify-center"
+    x-cloak
   @click.away="showDelete = false"
 >
-  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-96 p-6 space-y-4 transform transition-all" style="border-radius: 20px;">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-96 p-6  max-w-4xl transform transition-all" style="border-radius: 20px;">
     <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-center">
       Konfirmasi Hapus
     </h3>

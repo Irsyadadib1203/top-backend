@@ -34,5 +34,12 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    // config/services.php
+    'digiflazz' => [
+        'username' => env('DIGIFLAZZ_USERNAME'),
+        'key' => env('DIGIFLAZZ_KEY'),
+        'testing' => env('DIGIFLAZZ_TESTING', false),
+    ],
+
 
 ];

@@ -27,7 +27,7 @@
 
       <!-- Informasi singkat -->
       <span class="hidden text-sm font-medium text-gray-600 dark:text-gray-300 md:block">
-        Selamat datang di <span class="font-semibold text-blue-600 dark:text-blue-400">Dashboard Admin</span>
+        Selamat datang di <span class="font-semibold text-blue-600 dark:text-blue-400">Dashboard {{ Auth::user()->role }}</span>
       </span>
     </div>
 

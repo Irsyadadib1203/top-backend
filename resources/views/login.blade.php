@@ -20,8 +20,8 @@
       <div class="flex-1 h-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl dark:bg-gray-800">
         <div class="flex flex-col overflow-y-auto md:flex-row">
           <div class="h-32 md:h-auto md:w-1/2">
-            <img aria-hidden="true" class="object-cover w-full h-full dark:hidden" src="{{ asset('assets/img/login-office.jpeg') }}" alt="Office" />
-            <img aria-hidden="true" class="hidden object-cover w-full h-full dark:block" src="{{ asset('assets/img/login-office-dark.jpeg') }}" alt="Office" />
+            <img aria-hidden="true" class="object-cover w-full h-full dark:hidden" src="{{ env('API_STORAGE_URL') . '/' . 'kantorDesa.jpeg'}}" alt="Office" />
+            <img aria-hidden="true" class="hidden object-cover w-full h-full dark:block" src="{{ env('API_STORAGE_URL') . '/' . 'kantorDesa.jpeg'}}" alt="Office" />
           </div>
 
           <div class="flex items-center justify-center p-6 sm:p-12 md:w-1/2">
@@ -38,13 +38,14 @@
                 @csrf
 
                 <label class="block text-sm">
-                  <span class="text-gray-700 dark:text-gray-400">Username</span>
+                  <span class="text-gray-700 dark:text-gray-400">Email</span>
                   <input
-                    name="username"
-                    value="{{ old('username') }}"
-                    requiblue
+                    name="email"
+                    value="{{ old('email') }}"
+                    required
                     class="block w-full mt-1 text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue form-input"
-                    placeholder="Masukkan username"
+                    placeholder="Masukkan email"
+                    autocomplete="off"
                   />
                 </label>
 
@@ -53,9 +54,10 @@
                   <input
                     type="password"
                     name="password"
-                    requiblue
+                    required
                     class="block w-full mt-1 text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue form-input"
                     placeholder="**********"
+                    autocomplete="off"
                   />
                 </label>
 
