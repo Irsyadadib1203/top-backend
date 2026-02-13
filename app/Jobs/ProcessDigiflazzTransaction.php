@@ -43,6 +43,7 @@ class ProcessDigiflazzTransaction implements ShouldQueue
                 'buyer_sku_code' => $nominal->provider_product_code,
                 'customer_no' => $this->transaction->customer_id,
                 'ref_id' => $refId,
+                'key' => $key,
             ]);
             $response = Http::timeout(20)
                 ->retry(3, 1000)
@@ -52,7 +53,6 @@ class ProcessDigiflazzTransaction implements ShouldQueue
                     'buyer_sku_code' => $nominal->provider_product_code,
                     'customer_no' => $this->transaction->customer_id,
                     'ref_id' => $refId,
-                    'testing' => config('services.digiflazz.testing', false),
                 ]);
                         \Log::info('Digiflazz Response', [
                     'status' => $response->status(),
