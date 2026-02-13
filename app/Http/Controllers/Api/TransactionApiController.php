@@ -41,7 +41,7 @@ class TransactionApiController extends Controller
                 'admin_fee' => $request->admin_fee ?? 0,
                 'total_amount' => $totalAmount,
                 'status' => $request->status ?? 'pending',
-                'ref_id' => strtolower(Str::random(10)),
+                'ref_id' => Str::random(10),
             ]);
 
             $transaction->load('game', 'nominal');
