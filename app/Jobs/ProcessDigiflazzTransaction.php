@@ -37,6 +37,14 @@ class ProcessDigiflazzTransaction implements ShouldQueue
         }
 
         try {
+                    \Log::info('Digiflazz Request', [
+                'username' => $username,
+                'signature' => $signature,
+                'buyer_sku_code' => $nominal->provider_product_code,
+                'customer_no' => $this->transaction->customer_id,
+                'ref_id' => $refId,
+                'testing' => config('services.digiflazz.testing', false),
+            ]);
             $response = Http::timeout(20)
                 ->retry(3, 1000)
                 ->post('https://api.digiflazz.com/v1/transaction', [
@@ -47,11 +55,16 @@ class ProcessDigiflazzTransaction implements ShouldQueue
                     'ref_id' => $refId,
                     'testing' => config('services.digiflazz.testing', false),
                 ]);
-
+                        \Log::info('Digiflazz Response', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
             $data = $response->json();
+            
 
             if (!$response->successful()) {
                 throw new \Exception($data['message'] ?? 'Digiflazz error');
+                
             }
 
             $providerStatus = strtolower($data['data']['status'] ?? 'pending');
