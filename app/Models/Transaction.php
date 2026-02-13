@@ -9,7 +9,6 @@ class Transaction extends Model
     protected $table = 'transactions';
 
     protected $fillable = [
-        'id',
         'invoice_number',
         'idempotency_key',
         'customer_id',
@@ -43,8 +42,8 @@ class Transaction extends Model
         'completed_at' => 'datetime',
     ];
 
-    public $incrementing = false;
-    protected $keyType = 'string';
+    public $incrementing = true;
+    protected $keyType = 'int';
 
     public function game()
     {
