@@ -28,13 +28,13 @@ class RetryPendingTransactions implements ShouldQueue
             try {
                 $username = config('services.digiflazz.username');
                 $key = config('services.digiflazz.key');
-                $refId = $transaction->invoice_number;
+                $refId = $transaction->ref_id;
                 $signature = md5($username . $key . $refId);
 
                 // Panggil API Digiflazz untuk cek status transaksi
                 $response = Http::timeout(10)->post('https://api.digiflazz.com/v1/transaction-status', [
                     'username' => $username,
-                    'signature' => $signature,
+                    'sign' => $signature,
                     'ref_id' => $refId,
                 ]);
 

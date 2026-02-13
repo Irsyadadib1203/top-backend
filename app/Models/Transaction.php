@@ -34,6 +34,7 @@ class Transaction extends Model
         'last_retry_at',
         'max_retries',
         'completed_at',
+        'ref_id',
     ];
 
     protected $casts = [

@@ -26,7 +26,7 @@ class ProcessDigiflazzTransaction implements ShouldQueue
         $username = config('services.digiflazz.username');
         $key = config('services.digiflazz.key');
 
-        $refId = $this->transaction->invoice_number;
+        $refId = $this->transaction->ref_id;
         $signature = md5($username . $key . $refId);
 
         $nominal = $this->transaction->nominal;
@@ -39,7 +39,7 @@ class ProcessDigiflazzTransaction implements ShouldQueue
         try {
                     \Log::info('Digiflazz Request', [
                 'username' => $username,
-                'signature' => $signature,
+                'sign' => $signature,
                 'buyer_sku_code' => $nominal->provider_product_code,
                 'customer_no' => $this->transaction->customer_id,
                 'ref_id' => $refId,

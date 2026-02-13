@@ -41,6 +41,7 @@ class TransactionApiController extends Controller
                 'admin_fee' => $request->admin_fee ?? 0,
                 'total_amount' => $totalAmount,
                 'status' => $request->status ?? 'pending',
+                'ref_id' => strtolower(Str::random(10)),
             ]);
 
             $transaction->load('game', 'nominal');
@@ -66,6 +67,7 @@ class TransactionApiController extends Controller
                 'updated_at' => $transaction->updated_at,
                 'game_name' => $transaction->game?->name ?? '-',
                 'nominal_name' => $transaction->nominal?->name ?? '-',
+                'ref_id' => $transaction->ref_id,
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::error('Validation error: ' . json_encode($e->errors()));
