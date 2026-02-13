@@ -6,7 +6,7 @@ use GuzzleHttp\Client;
 use Symfony\Component\DomCrawler\Crawler;
 use Illuminate\Support\Facades\Cache;
 
-class GoPayGameScraper
+class GopayGameScraper
 {
     protected Client $client;
 

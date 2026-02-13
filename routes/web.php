@@ -6,7 +6,7 @@ use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\gameController;
+use App\Http\Controllers\GameController;
 use App\Http\Controllers\NominalController;
 
 use PHPUnit\Framework\Attributes\Group;
@@ -34,8 +34,8 @@ Route::post('/pengguna', [PenggunaController::class, 'store'])->name('pengguna.s
 
 Route::get('/transaction', [TransactionController::class, 'index'])->name('transaction');
 Route::post('/transaction', [TransactionController::class, 'store'])->name('transaction.store');
-Route::put('/transaction/{id}', [TransactionController::class, 'update'])->name('transaction.update');
-Route::delete('/transaction/{id}', [TransactionController::class, 'destroy'])->name('transaction.destroy');
+Route::put('/transaction/update/{id}', [TransactionController::class, 'update'])->name('transaction.update');
+Route::delete('/transaction/delete/{id}', [TransactionController::class, 'destroy'])->name('transaction.destroy');
 
 
 Route::get('/game', [GameController::class, 'index'])->name('game');

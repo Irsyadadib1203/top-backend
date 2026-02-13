@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Services\GoPayGameScraper;
+use App\Services\GopayGameScraper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ScraperGameApiController extends Controller
 {
-    protected GoPayGameScraper $scraper;
+    protected GopayGameScraper $scraper;
 
-    public function __construct(GoPayGameScraper $scraper)
+    public function __construct(GopayGameScraper $scraper)
     {
         $this->scraper = $scraper;
     }

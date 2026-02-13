@@ -150,7 +150,11 @@
           })"
           class="text-blue-600 hover:underline"
         >
-          Detail
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12z" />
+                                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+            </svg>
         </button>
 
         {{-- Edit --}}
@@ -163,7 +167,7 @@
           })"
           class="text-yellow-600 hover:underline"
         >
-          Edit
+          ✏️
         </button>
 
         {{-- Hapus --}}
@@ -171,7 +175,7 @@
           @click="openDelete({{ $trx->id }}, '{{ $trx->invoice }}')"
           class="text-red-600 hover:underline"
         >
-          Hapus
+          🗑️
         </button>
 
       </td>
@@ -310,23 +314,23 @@
               
     <h2 class="text-lg font-semibold mb-4">Edit Transaksi</h2>
 
-    <form :action="`/admin/transaksi/${edit.id}`" method="POST">
+    <form :action="`/transaction/update/${edit.id}`" method="POST">
       @csrf
       @method('PUT')
 
       <div class="mb-4">
         <label>Status Pembayaran</label>
         <select name="status_pembayaran" class="w-full border rounded p-2"
-          x-model="edit.status_pembayaran">
-          <option value="pending">Pending</option>
-          <option value="paid">Paid</option>
-          <option value="failed">Failed</option>
+            x-model="edit.status_pembayaran">
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="failed">Failed</option>
         </select>
       </div>
 
       <div class="mb-4">
         <label>Status Pesanan</label>
-        <select name="status_transaksi" class="w-full border rounded p-2"
+        <select name="status_pesanan" class="w-full border rounded p-2"
           x-model="edit.status_pesanan">
           <option value="pending">Pending</option>
           <option value="success">Success</option>
@@ -385,9 +389,10 @@
       <strong x-text="delete.invoice"></strong>?
     </p>
 
-    <form :action="`/admin/transaksi/${delete.id}`" method="POST" class="mt-6">
+  <form :action="/transaction/delete/${delete.id}" method="POST">
       @csrf
       @method('DELETE')
+
 
       <div class="flex justify-end gap-2">
         <button type="button" @click="showDeleteModal=false"
