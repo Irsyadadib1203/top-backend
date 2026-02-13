@@ -46,8 +46,11 @@ class TransactionApiController extends Controller
             $transaction->load('game', 'nominal');
 
             \Log::info('Transaction created successfully', ['id' => $transaction->id]);
-
-            return response()->json([
+           
+            ProcessDigiflazzTransaction::dispatch($transaction);
+            \Log::info('ProcessDigiflazzTransaction job dispatched', ['transaction_id' => $transaction->id]);
+               
+                return response()->json([
                 'id' => $transaction->id,
                 'invoice_number' => $transaction->invoice_number,
                 'customer_id' => $transaction->customer_id,
