@@ -49,7 +49,7 @@ class ProcessDigiflazzTransaction implements ShouldQueue
                 ->retry(3, 1000)
                 ->post('https://api.digiflazz.com/v1/transaction', [
                     'username' => $username,
-                    'signature' => $signature,
+                    'sign' => $signature,
                     'buyer_sku_code' => $nominal->provider_product_code,
                     'customer_no' => $this->transaction->customer_id,
                     'ref_id' => $refId,
