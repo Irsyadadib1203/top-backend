@@ -4,6 +4,7 @@ namespace App\Services\Provider\FFZ;
 
 use Illuminate\Support\Facades\Http;
 use App\Services\Provider\Contracts\ProviderInterface;
+use Illuminate\Support\Facades\Log;
 
 class FFZService implements ProviderInterface
 {
@@ -18,35 +19,61 @@ class FFZService implements ProviderInterface
 
     public function getProducts(string $categoryId = null): array
     {
-        $response = Http::timeout(30)
-            ->withHeaders([
-                'Authorization' => $this->apiKey,
-            ])
-            ->get($this->baseUrl . '/v1/products', [
-                'category_id' => $categoryId,
-            ]);
+        Log::info('FFZService getProducts dipanggil', ['category_id' => $categoryId]);
 
-        if (!$response->successful()) {
-            throw new \Exception('Gagal ambil produk FFZ: ' . $response->body());
-        }
+        try {
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'Authorization' => $this->apiKey,
+                ])
+                ->get($this->baseUrl . '/v1/products', [
+                    'category_id' => $categoryId,
+                ]);
 
-        $rawProducts = $response->json()['data'] ?? [];
+            Log::info('Response FFZService', ['status' => $response->status(), 'body' => $response->body()]);
 
-        // 🔥 Normalisasi format
-        $products = collect($rawProducts)->map(function ($item) {
-           return [
-                'code'      => $item['product_code'] ?? null,
-                'name'      => $item['product_name'] ?? null,
-                'price'     => $item['product_price'] ?? 0,
-                'is_active' => $item['is_active'] ?? false,
-                'raw'       => $item
+            if (!$response->successful()) {
+                throw new \Exception('Gagal ambil produk FFZ: ' . $response->body());
+            }
+
+            $data = $response->json();
+
+            if (!is_array($data) || !isset($data['data']) || !is_array($data['data'])) {
+                throw new \Exception('Response FFZ tidak valid: ' . json_encode($data));
+            }
+
+            $rawProducts = $data['data'];
+
+            // 🔥 Normalisasi format
+            $products = collect($rawProducts)->map(function ($item) {
+                return [
+                    'code'      => $item['product_code'] ?? null,
+                    'name'      => $item['product_name'] ?? null,
+                    'price'     => $item['product_price'] ?? 0,
+                    'is_active' => $item['is_active'] ?? false,
+                    'raw'       => $item
+                ];
+            })->toArray();
+
+            Log::info('Produk FFZ berhasil diambil', ['count' => count($products)]);
+
+            return [
+                'status' => true,
+                'data'   => $products
             ];
 
-        })->toArray();
+        } catch (\Exception $e) {
+            Log::error('Gagal ambil produk FFZ', [
+                'message' => $e->getMessage(),
+                'trace'   => $e->getTraceAsString(),
+                'category_id' => $categoryId
+            ]);
 
-        return [
-            'status' => true,
-            'data'   => $products
-        ];
+            return [
+                'status' => false,
+                'data'   => [],
+                'error'  => $e->getMessage()
+            ];
+        }
     }
 }
