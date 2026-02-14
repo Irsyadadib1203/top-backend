@@ -239,6 +239,15 @@
       <h2 class="text-lg font-semibold mb-4">Sync Produk Provider</h2>
       <p class="mb-4">Pilih provider dan game untuk mengambil produk.</p>
 
+      {{-- ✅ Error messages --}}
+        @if ($errors->any())
+            <div class="bg-red-100 text-red-700 p-2 rounded mb-4">
+                @foreach ($errors->all() as $error)
+                    <p>{{ $error }}</p>
+                @endforeach
+            </div>
+        @endif
+
       <form action="{{ route('nominal.sync')  }}" method="POST" class="space-y-4">
         @csrf
         <div>

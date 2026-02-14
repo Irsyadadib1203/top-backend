@@ -8,6 +8,7 @@ use App\Models\Game;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Services\ProductSyncService;
+use Illuminate\Support\Facades\Log;
 
 class NominalController extends Controller
 {
@@ -125,6 +126,8 @@ class NominalController extends Controller
     }
     public function syncProvider(Request $request, ProductSyncService $syncService)
 {
+    
+    Log::info('syncProvider dipanggil', $request->all());
     $request->validate([
         'provider' => 'required|string',
         'game_id' => 'required|exists:games,id',
@@ -138,12 +141,18 @@ class NominalController extends Controller
             $request->category_id
         );
 
+      Log::info("Produk berhasil disimpan", ['count' => $savedCount]);
+
         return redirect()->back()->with(
             'success',
             "Berhasil menyimpan {$savedCount} produk dari {$request->provider}"
         );
 
     } catch (\Exception $e) {
+        Log::error('Gagal sync provider', [
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
         return redirect()->back()->withErrors($e->getMessage());
     }
 }
