@@ -9,7 +9,6 @@ class Provider extends Model
     protected $table = 'providers';
 
     protected $fillable = [
-        'id',
         'name',
         'code',
         'api_url',
@@ -17,8 +16,8 @@ class Provider extends Model
         'is_active',
     ];
 
-    public $incrementing = false;
-    protected $keyType = 'string';
+    public $incrementing = true;
+    protected $keyType = 'int';
 
     public function nominals()
     {

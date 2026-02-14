@@ -7,6 +7,7 @@ use App\Models\Nominal;
 use App\Models\Game;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use App\Services\ProductSyncService;
 
 class NominalController extends Controller
 {
@@ -122,4 +123,29 @@ class NominalController extends Controller
             return redirect()->back()->withErrors('Error: ' . $e->getMessage());
         }
     }
+    public function syncProvider(Request $request, ProductSyncService $syncService)
+{
+    $request->validate([
+        'provider' => 'required|string',
+        'game_id' => 'required|exists:games,id',
+        'category_id' => 'nullable|string',
+    ]);
+
+    try {
+        $savedCount = $syncService->sync(
+            $request->provider,
+            $request->game_id,
+            $request->category_id
+        );
+
+        return redirect()->back()->with(
+            'success',
+            "Berhasil menyimpan {$savedCount} produk dari {$request->provider}"
+        );
+
+    } catch (\Exception $e) {
+        return redirect()->back()->withErrors($e->getMessage());
+    }
+}
+
 }

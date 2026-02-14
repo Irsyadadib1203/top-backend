@@ -106,6 +106,19 @@
     </li>
     </ul>
 </li>
+<li class="relative px-6 py-3">
+        <a href="{{ route('provider.index') }}"
+            class="inline-flex items-center w-full text-sm font-semibold
+            px-2 py-2 rounded-lg transition-all duration-200
+            {{ request()->routeIs('provider.*')
+                ? 'bg-blue-600 text-white pl-8 hover:bg-blue-700 focus:bg-blue-700'
+                : 'hover:bg-gray-100 dark:hover:bg-gray-700 
+                   hover:text-gray-800 dark:hover:text-gray-200 
+                   hover:pl-8' }}">
+        <i class="bi bi-images"></i>
+    <span class="ml-4"> Provider</span>
+    </a>
+      </li>
     </ul>
 </li>
 
@@ -201,6 +214,14 @@
             <path d="M4 6h16M4 10h16M4 14h16"></path>
           </svg>
           <span class="ml-4">Nominal</span>
+        </a>
+      </li>
+
+      <li class="relative px-6 py-3">
+        <a href="{{ route('provider.index') }}"
+           class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200">
+          <i class="bi bi-images"></i>
+          <span class="ml-4">Provider</span>
         </a>
       </li>
       

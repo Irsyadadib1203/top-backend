@@ -20,7 +20,7 @@ class TransactionController extends Controller
         // 🔍 Search invoice / ID
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('invoice', 'like', '%' . $request->search . '%')
+                $q->where('invoice_number', 'like', '%' . $request->search . '%')
                   ->orWhere('id', $request->search);
             });
         }
@@ -32,12 +32,16 @@ class TransactionController extends Controller
 
         // 📦 Status pesanan
         if ($request->filled('status_pesanan')) {
-            $query->where('status_pesanan', $request->status_pesanan);
+            $query->where('status', $request->status);
         }
 
         // 💳 Status pembayaran
-        if ($request->filled('status_pembayaran')) {
-            $query->where('status_pembayaran', $request->status_pembayaran);
+       if ($request->filled('status_pembayaran')) {
+            if ($request->status_pembayaran === 'paid') {
+                $query->whereNotNull('payment_verified_at');
+            } elseif ($request->status_pembayaran === 'unpaid') {
+                $query->whereNull('payment_verified_at');
+            }
         }
 
         // 📅 Filter tanggal

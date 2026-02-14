@@ -1,6 +1,5 @@
 <?php
 
-use GuzzleHttp\Middleware;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\AuthController;
@@ -8,8 +7,8 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\NominalController;
+use App\Http\Controllers\ProviderController;
 
-use PHPUnit\Framework\Attributes\Group;
 
 
 Route::middleware('guest')->group(function () {
@@ -48,7 +47,15 @@ Route::prefix('admin/nominal')->group(function () {
     Route::post('/store', [NominalController::class, 'store'])->name('nominal.store');
     Route::put('/update/{id}', [NominalController::class, 'update'])->name('nominal.update');
     Route::delete('/delete/{id}', [NominalController::class, 'destroy'])->name('nominal.delete');
-    Route::post('/fetch-digiflazz', [NominalController::class, 'fetchFromDigiflazz'])->name('nominal.fetchDigiflazz');
+    Route::post('/sync', [NominalController::class, 'syncProvider'])
+    ->name('nominal.sync');
 });
+
+
+Route::prefix('admin')
+    ->middleware(['auth'])
+    ->group(function () {
+        Route::resource('provider', ProviderController::class);
+    });
 
 });

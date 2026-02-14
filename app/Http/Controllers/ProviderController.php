@@ -11,7 +11,7 @@ class ProviderController extends Controller
     public function index()
     {
         $providers = Provider::latest()->get();
-        return view('admin.provider.index', compact('providers'));
+        return view('admin.provider.provider', compact('providers'));
     }
 
     public function create()
@@ -24,6 +24,8 @@ class ProviderController extends Controller
         $request->validate([
             'name' => 'required|string|max:100',
             'code' => 'required|string|max:50|unique:providers,code',
+            'api_url' => 'nullable|string',
+            'api_key' => 'nullable|string',
             'is_active' => 'required|boolean',
         ]);
 
@@ -44,6 +46,8 @@ class ProviderController extends Controller
         $request->validate([
             'name' => 'required|string|max:100',
             'code' => 'required|string|max:50|unique:providers,code,' . $provider->id,
+            'api_url' => 'nullable|string',
+            'api_key' => 'nullable|string',
             'is_active' => 'required|boolean',
         ]);
 

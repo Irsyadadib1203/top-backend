@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use App\Jobs\ProcessDigiflazzTransaction;
+use App\Jobs\ProcessTransaction;
 
 class TransactionApiController extends Controller
 {
@@ -48,8 +48,9 @@ class TransactionApiController extends Controller
 
             \Log::info('Transaction created successfully', ['id' => $transaction->id]);
            
-            ProcessDigiflazzTransaction::dispatch($transaction);
-            \Log::info('ProcessDigiflazzTransaction job dispatched', ['transaction_id' => $transaction->id]);
+            ProcessTransaction::dispatch($transaction);
+
+            \Log::info('ProcessTransaction job dispatched', ['transaction_id' => $transaction->id]);
                
                 return response()->json([
                 'id' => $transaction->id,
@@ -151,7 +152,7 @@ class TransactionApiController extends Controller
         }
 
         // Dispatch job untuk process async
-        ProcessDigiflazzTransaction::dispatch($transaction);
+        ProcessTransaction::dispatch($transaction);
 
         return response()->json(['message' => 'Transaction sedang diproses']);
     }

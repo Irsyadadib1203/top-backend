@@ -36,10 +36,16 @@ return [
     ],
     // config/services.php
     'digiflazz' => [
+        'base_url' => env('DIGIFLAZZ_BASE_URL'),
         'username' => env('DIGIFLAZZ_USERNAME'),
         'key' => env('DIGIFLAZZ_KEY'),
         'testing' => env('DIGIFLAZZ_TESTING', false),
     ],
+    'ffz' => [
+        'base_url' => env('FFZ_BASE_URL'),
+        'api_key' => env('FFZ_API_KEY'),
+    ],
+
 
 
 ];

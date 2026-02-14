@@ -36,8 +36,8 @@
       </button>
       <button
         @click="showModalFetch = true"
-        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-        📥 Fetch dari DigiFlazz
+        class="px-4 py-2 bg-green-600 text-black rounded-lg hover:bg-green-700">
+        📥 Sync Provider
       </button>
     </div>
   </div>
@@ -236,11 +236,19 @@
   {{-- MODAL FETCH DIGIFLAZZ --}}
   <div x-show="showModalFetch" class="fixed inset-0 z-30 flex items-center justify-center bg-black bg-opacity-50">
     <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-xl">
-      <h2 class="text-lg font-semibold mb-4">Fetch Produk dari DigiFlazz</h2>
-      <p class="mb-4">Pilih game untuk mengambil produk terkait dari DigiFlazz.</p>
+      <h2 class="text-lg font-semibold mb-4">Sync Produk Provider</h2>
+      <p class="mb-4">Pilih provider dan game untuk mengambil produk.</p>
 
-      <form action="{{ route('nominal.fetchDigiflazz') }}" method="POST" class="space-y-4">
+      <form action="{{ route('nominal.sync')  }}" method="POST" class="space-y-4">
         @csrf
+        <div>
+          <label>Provider</label>
+          <select name="provider" class="w-full p-2 border rounded-lg dark:bg-gray-700" required>
+              <option value="">-- Pilih Provider --</option>
+              <option value="digiflazz">DigiFlazz</option>
+              <option value="ffz">FFZ</option>
+          </select>
+        </div>
 
         <div>
           <label>Game</label>
