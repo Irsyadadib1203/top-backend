@@ -20,7 +20,7 @@ class DigiflazzService implements ProviderInterface
 
     public function getProducts(?string $categoryId = null): array
     {
-        $signature = md5($this->username . $this->apiKey);
+        $signature = md5($this->username . $this->apiKey . "pricelist");
 
         try {
             $response = Http::timeout(30)
@@ -43,7 +43,11 @@ class DigiflazzService implements ProviderInterface
             $rawProducts = $data['data'];
 
             // 🔥 Normalisasi format seperti command lama
-            $products = collect($rawProducts)->map(function ($item) {
+            $products = collect($rawProducts)
+            ->filter(function ($item) use ($categoryId) {
+                return $item['category'] === $categoryId;
+            })
+            ->map(function ($item) {
                 return [
                     'code'      => $item['buyer_sku_code'] ?? null,
                     'name'      => $item['product_name'] ?? null,
@@ -54,10 +58,7 @@ class DigiflazzService implements ProviderInterface
                 ];
             })->toArray();
 
-            return [
-                'status' => true,
-                'data'   => $products
-            ];
+            return $products;
 
         } catch (\Exception $e) {
             // ❌ Log error untuk debugging
@@ -66,11 +67,7 @@ class DigiflazzService implements ProviderInterface
                 'trace'   => $e->getTraceAsString()
             ]);
 
-            return [
-                'status' => false,
-                'data'   => [],
-                'error'  => $e->getMessage()
-            ];
+            return []; // ✅ Kembalikan array kosong jika gagal, jangan lempar exception
         }
     }
 

@@ -17,6 +17,22 @@ class FFZService implements ProviderInterface
         $this->apiKey  = config('services.ffz.api_key');
     }
 
+    public function getCategories(): array
+    {
+        $response = Http::withHeaders([
+            'Authorization' => $this->apiKey,
+        ])->get($this->baseUrl . '/v1/category');
+
+        if (!$response->successful()) {
+            return [];
+        }
+
+        $data = $response->json();
+
+        return $data['data'] ?? [];
+    }
+
+
     public function getProducts(string $categoryId = null): array
     {
         Log::info('FFZService getProducts dipanggil', ['category_id' => $categoryId]);
@@ -57,10 +73,8 @@ class FFZService implements ProviderInterface
 
             Log::info('Produk FFZ berhasil diambil', ['count' => count($products)]);
 
-            return [
-                'status' => true,
-                'data'   => $products
-            ];
+            return $products;
+
 
         } catch (\Exception $e) {
             Log::error('Gagal ambil produk FFZ', [
@@ -69,11 +83,8 @@ class FFZService implements ProviderInterface
                 'category_id' => $categoryId
             ]);
 
-            return [
-                'status' => false,
-                'data'   => [],
-                'error'  => $e->getMessage()
-            ];
+            return [];
+
         }
     }
 }

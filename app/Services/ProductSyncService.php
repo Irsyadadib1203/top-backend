@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Nominal;
 use App\Models\Game;
+use App\Models\GameProvider;
 use App\Services\Provider\ProviderManager;
 
 class ProductSyncService
@@ -19,14 +20,27 @@ class ProductSyncService
     {
         $provider = $this->providerManager->driver($providerCode);
 
-        $products = $provider->getProducts($categoryId);
+        $gameProvider = GameProvider::where('game_id', $gameId)
+            ->where('provider_code', $providerCode)
+            ->firstOrFail();
+
+        $products = $provider->getProducts($gameProvider->provider_category_id);
+        
+        if (empty($products)) {
+            throw new \Exception("Produk kosong dari provider");
+        }
+
+
         $game = Game::findOrFail($gameId);
 
         $savedCount = 0;
 
         foreach ($products as $product) {
+            if (!$product['is_active']) {
+                continue;
+            }
             Nominal::updateOrCreate(
-                ['provider_product_code' => $product['sku']],
+                ['provider_product_code' => $product['code']],
                 [
                     'game_id' => $game->id,
                     'name' => $product['name'],

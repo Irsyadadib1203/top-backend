@@ -20,8 +20,8 @@ class Game extends Model
         'sort_order',
     ];
 
-    public $incrementing = false;
-    protected $keyType = 'string';
+    public $incrementing = true;
+    protected $keyType = 'int';
 
     public function nominals()
     {
