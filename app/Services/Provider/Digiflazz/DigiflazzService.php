@@ -44,7 +44,7 @@ class DigiflazzService implements ProviderInterface
 
              if ($categoryId) {
                 $rawProducts = collect($rawProducts)
-                    ->filter(fn($item) => $item['category'] === $categoryId)
+                    ->filter(fn($item) => $item['brand'] === $categoryId)
                     ->values()
                     ->toArray();
             }
