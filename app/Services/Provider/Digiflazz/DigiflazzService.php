@@ -26,7 +26,7 @@ class DigiflazzService implements ProviderInterface
             $response = Http::timeout(30)
                 ->post($this->baseUrl . '/v1/price-list', [
                     'username'  => $this->username,
-                    'signature' => $signature,
+                    'sign' => $signature,
                 ]);
 
             if (!$response->successful()) {
@@ -42,12 +42,15 @@ class DigiflazzService implements ProviderInterface
 
             $rawProducts = $data['data'];
 
+             if ($categoryId) {
+                $rawProducts = collect($rawProducts)
+                    ->filter(fn($item) => $item['category'] === $categoryId)
+                    ->values()
+                    ->toArray();
+            }
+
             // 🔥 Normalisasi format seperti command lama
-            $products = collect($rawProducts)
-            ->filter(function ($item) use ($categoryId) {
-                return $item['category'] === $categoryId;
-            })
-            ->map(function ($item) {
+            $products = collect($rawProducts)->map(function ($item) {
                 return [
                     'code'      => $item['buyer_sku_code'] ?? null,
                     'name'      => $item['product_name'] ?? null,

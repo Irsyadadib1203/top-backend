@@ -7,6 +7,8 @@ use App\Models\Game;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Goutte\Client;
+use App\Models\GameProvider;
+use App\Services\Provider\ProviderManager;
 
 class GameController extends Controller
 {
@@ -16,7 +18,7 @@ class GameController extends Controller
         return view('admin.produk.game', compact('games'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request,ProviderManager $providerManager)
     {
         
         $request->validate([
@@ -31,7 +33,7 @@ class GameController extends Controller
             $imagePath = $request->file('image_url')->store('games', 'public');
         }
 
-        Game::create([
+        $game =Game::create([
             'name'        => $request->name,
             'slug'        => Str::slug($request->name),
             'category'    => $request->category,
@@ -41,7 +43,34 @@ class GameController extends Controller
             'is_popular'  => $request->has('is_popular'),
         ]);
 
-        return redirect()->back()->with('success', 'Game berhasil ditambahkan');
+        // 2️⃣ Ambil kategori dari provider otomatis
+    $providers = ['ffz', 'digiflazz']; // daftar provider
+
+    foreach ($providers as $providerCode) {
+        $provider = $providerManager->driver($providerCode);
+
+        $categoryId = null;
+
+        if (method_exists($provider, 'getCategories')) {
+            $categories = $provider->getCategories();
+
+            // ambil kategori yang sesuai nama game, fallback ke index 0
+            $matched = collect($categories)->firstWhere('name', $game->name);
+
+            $categoryId = $matched['id'] ?? ($categories[0]['id'] ?? null);
+        }
+
+        // 3️⃣ Simpan mapping ke game_providers
+        if ($categoryId) {
+            GameProvider::create([
+                'game_id' => $game->id,
+                'provider_code' => strtoupper($providerCode),
+                'provider_category_id' => $categoryId,
+            ]);
+        }
+    }
+
+    return redirect()->back()->with('success', 'Game berhasil ditambahkan & mapping provider otomatis dibuat');
     }
 
     public function update(Request $request, $id)
