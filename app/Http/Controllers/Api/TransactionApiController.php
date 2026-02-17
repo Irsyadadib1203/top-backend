@@ -7,11 +7,13 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Jobs\ProcessTransaction;
+use App\Models\Nominal;
 
 class TransactionApiController extends Controller
 {
     public function store(Request $request)
     {
+        \DB::beginTransaction();
         try {
            
             \Log::info('Transaction create request', $request->all());
@@ -28,14 +30,15 @@ class TransactionApiController extends Controller
                 'status' => 'nullable|string|in:pending,processing,success,failed',
             ]);
 
-            $totalAmount = $request->selling_price + ($request->admin_fee ?? 0);
-
+            $nominal = Nominal::findOrFail($request->nominal_id);
+            $totalAmount = $nominal->selling_price + ($request->admin_fee ?? 0);
             $transaction = Transaction::create([
                 'invoice_number' => $request->invoice_number,
                 'customer_id' => $request->customer_id,
                 'customer_phone' => $request->customer_phone,
                 'game_id' => $request->game_id,
                 'nominal_id' => $request->nominal_id,
+                'provider_id' => $nominal->provider_id,
                 'base_price' => $request->base_price,
                 'selling_price' => $request->selling_price,
                 'admin_fee' => $request->admin_fee ?? 0,
@@ -49,6 +52,7 @@ class TransactionApiController extends Controller
             \Log::info('Transaction created successfully', ['id' => $transaction->id]);
            
             ProcessTransaction::dispatch($transaction);
+            \DB::commit();
 
             \Log::info('ProcessTransaction job dispatched', ['transaction_id' => $transaction->id]);
                
@@ -74,6 +78,7 @@ class TransactionApiController extends Controller
             \Log::error('Validation error: ' . json_encode($e->errors()));
             return response()->json(['error' => 'Validation failed', 'details' => $e->errors()], 422);
         } catch (\Exception $e) {
+            \DB::rollBack();
             \Log::error('Transaction create error: ' . $e->getMessage() . ' | Line: ' . $e->getLine() . ' | File: ' . $e->getFile());
             return response()->json(['error' => 'Internal Server Error', 'message' => $e->getMessage()], 500);
         }

@@ -76,16 +76,16 @@
       <tbody class="bg-white divide-y dark:bg-gray-800">
         @foreach($transaksiRealtime as $trx)
         <tr>
-          <td class="px-4 py-3 font-semibold">{{ $trx->invoice }}</td>
+          <td class="px-4 py-3 font-semibold">{{ $trx->invoice_number }}</td>
           <td class="px-4 py-3">{{ $trx->game->name ?? '-' }}</td>
           <td class="px-4 py-3">
-            Rp {{ number_format($trx->total,0,',','.') }}
+            Rp {{ number_format($trx->total_amount,0,',','.') }}
           </td>
           <td class="px-4 py-3">
-            <span class="px-2 py-1 rounded text-white
-              {{ $trx->status_pesanan == 'success' ? 'bg-green-600' :
-                 ($trx->status_pesanan == 'pending' ? 'bg-yellow-500' : 'bg-red-600') }}">
-              {{ ucfirst($trx->status_pesanan) }}
+            <span class="px-2 py-1 rounded text-black text-xs font-bold
+              {{ $trx->status == 'success' ? 'bg-green-600' :
+                 ($trx->status == 'pending' ? 'bg-yellow-500' : 'bg-red-600') }}">
+              {{ ucfirst($trx->status) }}
             </span>
           </td>
           <td class="px-4 py-3 text-sm">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Nominal;
 use App\Models\Game;
+use App\Models\Provider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Services\ProductSyncService;
@@ -12,15 +13,37 @@ use Illuminate\Support\Facades\Log;
 
 class NominalController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $nominals = Nominal::with('game')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+         $query = Nominal::with('game');
+
+        // Search nama nominal
+        if ($request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // Filter game
+        if ($request->game) {
+            $query->where('game_id', $request->game);
+        }
+        
+         if ($request->provider) {
+            $query->whereHas('game', function ($q) use ($request) {
+                $q->where('provider_id', $request->provider);
+            });
+        }
+        
+        // Filter status
+        if ($request->status !== null && $request->status !== '') {
+            $query->where('is_active', $request->status);
+        }
+        $nominals = $query->orderBy('created_at', 'desc')->paginate(10);
 
         $games = Game::where('is_active', 1)->get();
 
-        return view('admin.produk.nominal', compact('nominals', 'games'));
+        $provider=Provider::get();
+
+        return view('admin.produk.nominal', compact('nominals', 'games', 'provider'));
     }
 
     public function store(Request $request)
@@ -34,6 +57,7 @@ class NominalController extends Controller
 
         Nominal::create([
             'game_id'       => $request->game_id,
+            'provider_id'   => $request->provider_id ?? null,
             'name'          => $request->name,
             'base_price'    => $request->base_price,
             'selling_price' => $request->selling_price,
@@ -129,14 +153,17 @@ class NominalController extends Controller
     
     Log::info('syncProvider dipanggil', $request->all());
     $request->validate([
-        'provider' => 'required|string',
+        'provider' => 'required|exists:providers,id',
         'game_id' => 'required|exists:games,id',
         'category_id' => 'nullable|string',
     ]);
 
     try {
+
+        $provider = Provider::findOrFail($request->provider);
+
         $savedCount = $syncService->sync(
-            $request->provider,
+            $provider,    
             $request->game_id,
             $request->category_id
         );
@@ -145,7 +172,7 @@ class NominalController extends Controller
 
         return redirect()->back()->with(
             'success',
-            "Berhasil menyimpan {$savedCount} produk dari {$request->provider}"
+            "Berhasil menyimpan {$savedCount} produk dari {$provider->name}"
         );
 
     } catch (\Exception $e) {

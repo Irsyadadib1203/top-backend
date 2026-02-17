@@ -23,9 +23,11 @@ class ProcessTransaction implements ShouldQueue
     {
         $transaction = $this->transaction->fresh();
 
-        if (!$transaction || $transaction->status !== 'pending') {
-            return;
-        }
+       $transaction = Transaction::where('id', $this->transaction->id)
+            ->where('status', 'pending')
+            ->lockForUpdate()
+            ->first();
+
 
         $transactionService->process($transaction);
     }

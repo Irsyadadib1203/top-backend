@@ -41,6 +41,82 @@
       </button>
     </div>
   </div>
+  {{-- FILTER --}}
+<form method="GET" class="mb-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+
+  {{-- Search --}}
+  <div class="mb-4">
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      Cari Nominal
+    </label>
+    <input type="text"
+      name="search"
+      value="{{ request('search') }}"
+      placeholder="Cari nama nominal..."
+      oninput="this.form.submit()"
+      class="w-full p-2 border rounded-md dark:bg-gray-700 dark:text-gray-200">
+  </div>
+
+  {{-- Filter Game & Status --}}
+  <div class="flex items-end space-x-6">
+
+    {{-- Game --}}
+    <div class="flex-1">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        Game
+      </label>
+      <select name="game"
+        onchange="this.form.submit()"
+        class="w-full p-2 border rounded-md dark:bg-gray-700 dark:text-gray-200">
+        <option value="">Semua Game</option>
+        @foreach($games as $game)
+          <option value="{{ $game->id }}"
+            {{ request('game') == $game->id ? 'selected' : '' }}>
+            {{ $game->name }}
+          </option>
+        @endforeach
+      </select>
+    </div>
+    {{-- Provider --}}
+  <div class="flex-1">
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      Provider
+    </label>
+    <select name="provider"
+      onchange="this.form.submit()"
+      class="w-full p-2 border rounded-md dark:bg-gray-700 dark:text-gray-200">
+      <option value="">Semua Provider</option>
+      @foreach($provider as $prov)
+        <option value="{{ $prov->id }}"
+          {{ request('provider') == $prov->id ? 'selected' : '' }}>
+          {{ $prov->name }}
+        </option>
+      @endforeach
+    </select>
+  </div>
+
+
+    {{-- Status --}}
+    <div class="flex-1">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        Status
+      </label>
+      <select name="status"
+        onchange="this.form.submit()"
+        class="w-full p-2 border rounded-md dark:bg-gray-700 dark:text-gray-200">
+        <option value="">Semua Status</option>
+        <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>
+          Aktif
+        </option>
+        <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>
+          Nonaktif
+        </option>
+      </select>
+    </div>
+
+  </div>
+</form>
+
 
   {{-- Tabel --}}
   <div class="w-full overflow-x-auto rounded-lg shadow">
@@ -49,6 +125,7 @@
         <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50 dark:bg-gray-700">
           <th class="px-4 py-3">Game</th>
           <th class="px-4 py-3">Nominal</th>
+          <th class="px-4 py-3">Provider</th>
           <th class="px-4 py-3">Harga Provider</th>
           <th class="px-4 py-3">Harga Jual</th>
           <th class="px-4 py-3">Status</th>
@@ -61,6 +138,7 @@
         <tr class="text-gray-700 dark:text-gray-300">
           <td class="px-4 py-3">{{ $row->game->name }}</td>
           <td class="px-4 py-3">{{ $row->name }}</td>
+          <td class="px-4 py-3">{{ $row->provider->name ?? 'Tidak Ada Provider' }}</td>
           <td class="px-4 py-3">
             Rp {{ number_format($row->base_price,0,',','.') }}
           </td>
@@ -131,6 +209,16 @@
             <option value="">-- Pilih Game --</option>
             @foreach($games as $game)
               <option value="{{ $game->id }}">{{ $game->name }}</option>
+            @endforeach
+          </select>
+        </div>
+
+        <div>
+          <label>Provider</label>
+          <select name="provider_id" class="w-full p-2 border rounded-lg dark:bg-gray-700" required>
+            <option value="">-- Pilih Provider --</option>
+            @foreach($provider as $prov)
+              <option value="{{ $prov->id }}">{{ $prov->name }}</option>
             @endforeach
           </select>
         </div>
@@ -254,8 +342,9 @@
           <label>Provider</label>
           <select name="provider" class="w-full p-2 border rounded-lg dark:bg-gray-700" required>
               <option value="">-- Pilih Provider --</option>
-              <option value="digiflazz">DigiFlazz</option>
-              <option value="ffz">FFZ</option>
+              @foreach($provider as $prov)
+                <option value="{{ $prov->id }}">{{ $prov->name }}</option>
+              @endforeach
           </select>
         </div>
 

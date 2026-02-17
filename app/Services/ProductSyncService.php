@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Nominal;
 use App\Models\Game;
+use App\Models\Provider;
 use App\Models\GameProvider;
 use App\Services\Provider\ProviderManager;
 
@@ -16,12 +17,12 @@ class ProductSyncService
         $this->providerManager = $providerManager;
     }
 
-    public function sync(string $providerCode, string $gameId, ?string $categoryId = null): int
+    public function sync(Provider $provider, string $gameId, ?string $categoryId = null): int
     {
-        $provider = $this->providerManager->driver($providerCode);
+        $driver = $this->providerManager->driver($provider->code);
 
         $gameProvider = GameProvider::where('game_id', $gameId)
-            ->where('provider_code', $providerCode)
+            ->where('provider_code', $provider->code)
             ->firstOrFail();
 
         $products = $provider->getProducts($gameProvider->provider_category_id);
@@ -40,7 +41,10 @@ class ProductSyncService
                 continue;
             }
             Nominal::updateOrCreate(
-                ['provider_product_code' => $product['code']],
+                [
+                    'provider_id' => $provider->id,
+                    'provider_product_code' => $product['code']
+                    ],
                 [
                     'game_id' => $game->id,
                     'name' => $product['name'],

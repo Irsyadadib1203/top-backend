@@ -32,26 +32,40 @@ class TransactionService
 
             return;
         }
-
+        $newStatus = $this->mapProviderStatus($result['provider_status'] ?? 'PENDING');
+        
         $transaction->update([
+            'previous_status' => $transaction->status,
+            'status' => $newStatus,
+            'status_version' => $transaction->status_version + 1,
             'provider_order_id' => $result['provider_ref'] ?? null,
-            'provider_status' => 'success',
+            'provider_status' => strtolower($result['provider_status'] ?? 'pending'),
             'provider_message' => $result['message'] ?? null,
             'provider_callback_data' => $result['raw'] ?? null,
-            'status' => 'success',
+            'completed_at' => in_array($newStatus, ['success','failed']) ? now() : null,
         ]);
     }
 
 
-    private function mapStatus(string $providerStatus): string
+    public function mapProviderStatus(string $providerStatus): string
     {
         return match (strtoupper($providerStatus)) {
-            'SUCCESS', 'PAID' => 'success',
+            'SUCCESS', 'SUKSES', 'PAID' => 'success',
             'PENDING' => 'processing',
             'PARTIAL_SUCCESS' => 'partial',
-            'FAILED', 'REFUNDED' => 'failed',
+            'FAILED', 'GAGAL', 'REFUNDED' => 'failed',
             default => 'processing',
         };
     }
+
+    public function checkStatus(Transaction $transaction): array
+    {
+        $providerCode = $transaction->nominal->provider->code;
+
+        $provider = $this->providerManager->transactionDriver($providerCode);
+
+        return $provider->checkStatus($transaction);
+    }
+
 
 }

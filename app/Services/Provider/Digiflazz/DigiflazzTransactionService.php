@@ -54,4 +54,12 @@ class DigiflazzTransactionService implements TransactionProviderInterface
         ];
 
     }
+    public function checkStatus(Transaction $transaction): array
+    {
+        return [
+            'success' => false,
+            'message' => 'Provider does not support status check'
+        ];
+    }
+
 }

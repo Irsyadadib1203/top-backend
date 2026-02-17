@@ -10,12 +10,14 @@
     showEditModal: false,
     showDeleteModal: false,
     showProviderMessageModal: false,
+    showProviderCallbackModal: false,
 
     // Data untuk masing-masing modal
     trx: {},      // Untuk detail transaksi
     edit: {},     // Untuk edit transaksi
     delete: {},   // Untuk hapus transaksi
-    providerMessage: {},
+    providerMessage: null,
+    providerCallback: null,
 
     // Method untuk membuka modal detail
     openDetail(data) {
@@ -39,6 +41,12 @@
     openProviderMessage(data) {
       this.providerMessage = data;
       this.showProviderMessageModal = true;
+    },
+
+      // Method untuk membuka modal provider callback
+    openProviderCallback(data) {
+      this.providerCallback = data;
+      this.showProviderCallbackModal = true;
     },
 
     // Method untuk menutup semua modal
@@ -121,6 +129,7 @@
           <th class="px-4 py-3">Status Pesanan</th>
           <th class="px-4 py-3">Status Pembayaran</th>
           <th class="px-4 py-3">Provider Message</th>
+          <th class="px-4 py-3">Provider Callback</th>
           <th class="px-4 py-3">Tanggal</th>
           <th class="px-4 py-3">Aksi</th>
         </tr>
@@ -143,10 +152,22 @@
               </span>
             </td>
             <td class="px-4 py-3">
+              @if($trx->provider_message)
               <button @click="openProviderMessage(@json($trx->provider_message))" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs">
                 Tampilkan
               </button>
+              @endif
             </td>
+            <td class="px-4 py-3">
+            @if($trx->provider_callback_data)
+              <button 
+                @click="openProviderCallback(@json($trx->provider_callback_data))"
+                class="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors text-xs">
+                Tampilkan
+              </button>
+            @endif
+          </td>
+
           <td class="px-4 py-3 text-sm">{{ $trx->created_at->format('d-m-Y H:i') }}</td>
           <td class="p-2 flex gap-2">
 
@@ -210,8 +231,7 @@
   </div>
 </div>
 
-<div
-    x-show="showProviderMessageModal"
+<div x-show="showProviderMessageModal"
     x-transition:enter="transition ease-out duration-300"
     x-transition:enter-start="opacity-0"
     x-transition:enter-end="opacity-100"
@@ -241,7 +261,15 @@
           </svg>
         </button>
       </div>
-      <pre class="bg-gray-100 dark:bg-gray-700 p-4 rounded text-sm overflow-x-auto" x-text="JSON.stringify(providerMessage, null, 2)"></pre>
+      <pre 
+        class="bg-gray-100 dark:bg-gray-700 p-4 rounded text-sm overflow-x-auto"
+        x-text="
+            providerMessage === null 
+            ? 'Tidak ada pesan'
+            : (typeof providerMessage === 'object'
+                ? JSON.stringify(providerMessage, null, 2)
+                : providerMessage)
+        "></pre>
       <div class="flex justify-end mt-4">
         <button @click="showProviderMessageModal = false" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors">
           Tutup
@@ -249,6 +277,49 @@
       </div>
     </div>
   </div>
+
+  <div x-show="showProviderCallbackModal"
+    x-transition
+    x-cloak
+    class="fixed inset-0 z-30 flex items-end bg-black bg-opacity-50 sm:items-center sm:justify-center">
+
+  <div
+    x-show="showProviderCallbackModal"
+    @click.away="showProviderCallbackModal = false"
+    @keydown.escape="showProviderCallbackModal = false"
+    class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl p-6 relative max-h-[90vh] overflow-y-auto">
+
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">
+        Provider Callback (JSON)
+      </h2>
+      <button @click="showProviderCallbackModal = false"
+        class="text-gray-500 hover:text-gray-700">
+        ✖
+      </button>
+    </div>
+
+    <pre 
+      class="bg-gray-100 dark:bg-gray-700 p-4 rounded text-sm overflow-x-auto"
+      x-text="
+        providerCallback === null
+        ? 'Tidak ada callback'
+        : (typeof providerCallback === 'object'
+            ? JSON.stringify(providerCallback, null, 2)
+            : providerCallback)
+      ">
+    </pre>
+
+    <div class="flex justify-end mt-4">
+      <button @click="showProviderCallbackModal = false"
+        class="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded-lg">
+        Tutup
+      </button>
+    </div>
+
+  </div>
+</div>
+
 
 
   <!-- Modal Detail Transaksi -->
