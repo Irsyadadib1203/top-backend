@@ -25,7 +25,7 @@ class ProductSyncService
             ->where('provider_code', $provider->code)
             ->firstOrFail();
 
-        $products = $provider->getProducts($gameProvider->provider_category_id);
+        $products = $driver->getProducts($gameProvider->provider_category_id);
         
         if (empty($products)) {
             throw new \Exception("Produk kosong dari provider");
